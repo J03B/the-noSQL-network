@@ -81,7 +81,7 @@ module.exports = {
 
   // API: /api/thoughts/:thoughtId/reactions
   // POST to create a reaction stored in a single thought's reactions array field
-  createThought(req, res) {
+  createReaction(req, res) {
     reactionSchema.create(req.body)
       .then((reaction) => {
         Thought.findOneAndUpdate(

@@ -2,10 +2,22 @@
 const { ObjectId } = require('mongoose').Types;
 const { User, Thought } = require('../models');
 
-const friendCount = async () => 
+const allFriendsCount = async () => 
   User.aggregate([
     { 
-      $project: {
+      $addFields: {
+        friendCount: { $size: '$friends' },
+      },
+    },
+  ]);
+
+const friendCount = async (userId) => 
+  User.aggregate([
+    {
+      $match: { _id: ObjectId(userId) }
+    }, 
+    {
+      $addFields: {
         friendCount: { $size: '$friends' },
       },
     },
@@ -17,11 +29,8 @@ module.exports = {
   getUsers(req, res) {
     User.find()
       .then(async (users) => {
-        const userObj = {
-          users, 
-          friendCount: await friendCount(),
-        };
-        return res.json(userObj);
+        const userObj = await allFriendsCount();
+        res.status(200).json( {...userObj} );
       })
       .catch((err) => {
         console.log(err);
@@ -38,7 +47,8 @@ module.exports = {
         if (!user) {
           res.status(404).json( { message: 'No User found with that ID' } );
         } else {
-          res.json( { user, friendCount: await friendCount() } );
+          userObj = await friendCount(req.params.userId);
+          res.status(200).json( {...userObj} );
         }
       })
       .catch((err) => {
@@ -51,7 +61,10 @@ module.exports = {
   // POST a new user:
   createUser(req, res) {
     User.create(req.body)
-      .then((user) => res.json(user))
+      .then(async (user) => {
+        const userObj = await friendCount(user._id);
+        res.status(200).json( {...userObj} );
+      })
       .catch((err) => res.status(500).json(err));
   },
 
@@ -67,7 +80,8 @@ module.exports = {
         if (!user) {
           res.status(404).json( { message: 'No User found with that ID' } );
         } else {
-          res.json( { user, friendCount: await friendCount() } );
+          const userObj = await friendCount(req.params.userId);
+          res.status(200).json( {...userObj} );
         }
       })
       .catch((err) => res.status(500).json(err));
@@ -100,7 +114,8 @@ module.exports = {
         if (!user) {
           res.status(404).json( { message: 'No User found with that ID' } );
         } else {
-          res.json( { user, friendCount: await friendCount() } );
+          const userObj = await friendCount(req.params.userId);
+          res.status(200).json( {...userObj} );
         }
       })
       .catch((err) => res.status(500).json(err));
@@ -118,7 +133,8 @@ module.exports = {
         if (!user) {
           res.status(404).json( { message: 'No User found with that ID' } );
         } else {
-          res.json( { user, friendCount: await friendCount() } );
+          const userObj = await friendCount(req.params.userId);
+          res.status(200).json( {...userObj} );
         }
       })
       .catch((err) => res.status(500).json(err));
