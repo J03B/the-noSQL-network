@@ -22,7 +22,7 @@ This application is a CMS that is utilizing a NoSQL database to track a social n
 
 The video below shows the deployed APIs in a demo, showing it's various levels of functionality.
 
-[![A full video demonstration of the app's numerous levels of functionality.](./assets/staffer-tracker-demo.mp4)](./assets/staffer-tracker-demo.mp4)
+[![A full video demonstration of the app's numerous levels of functionality.](./assets/the-nosql-network.mp4)](./assets/the-nosql-network.mp4)
 
 ### Task Completed
 The challenge here was to build an API for social network application where users can share their thoughts, react to friends’ thoughts, and create a friend list. It uses Express.js for routing, a MongoDB database, and the Mongoose ODM.
