@@ -1,51 +1,42 @@
 const connection = require('../config/connection');
-const { Student } = require('../models');
-const { getRandomName, getRandomAssignments } = require('./data');
+const { User, Thought } = require('../models');
+const { getRandomName, getRandomThought, getRandomReaction } = require('./data');
 
 connection.on('error', (err) => err);
 
 connection.once('open', async () => {
   console.log('connected');
 
-  // Drop existing courses
-  await Course.deleteMany({});
+  // Drop existing Thoughts
+  await Thought.deleteMany({});
 
-  // Drop existing students
-  await Student.deleteMany({});
+  // Drop existing Users
+  await User.deleteMany({});
 
-  // Create empty array to hold the students
-  const students = [];
+  // Create empty array to hold the users and thoughts
+  const users = [];
+  const thoughts = [];
 
-  // Loop 20 times -- add students to the students array
+  // Loop 20 times -- add users to the users array
   for (let i = 0; i < 20; i++) {
     // Get some random assignment objects using a helper function that we imported from ./data
-    const assignments = getRandomAssignments(20);
+    const username = getRandomName();
+    const email = `${username.split(' ')[0]}.${username.split(' ')[1]}@example.com`;
 
-    const fullName = getRandomName();
-    const first = fullName.split(' ')[0];
-    const last = fullName.split(' ')[1];
-    const github = `${first}${Math.floor(Math.random() * (99 - 18 + 1) + 18)}`;
-
-    students.push({
-      first,
-      last,
-      github,
-      assignments,
+    users.push({
+      username,
+      email
     });
   }
 
-  // Add students to the collection and await the results
-  await Student.collection.insertMany(students);
-
-  // Add courses to the collection and await the results
-  await Course.collection.insertOne({
-    courseName: 'UCLA',
-    inPerson: false,
-    students: [...students],
-  });
+  // Add users to the collection and await the results
+  await User.collection.insertMany(users);
 
   // Log out the seed data to indicate what should appear in the database
-  console.table(students);
-  console.info('Seeding complete! 🌱');
+  console.table(users);
+  console.info('Seeding Users complete! 🌱');
+  console.log('Upcoming feature to seed Thoughts and Reactions');
+  console.log('Example Thought:', getRandomThought());
+  console.log('Example Reaction:', getRandomReaction());
   process.exit(0);
 });

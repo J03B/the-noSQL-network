@@ -74,6 +74,34 @@ const names = [
   'Parker',
 ];
 
+const latinText = [
+  "bardus ",
+  "brevis ",
+  "comminus ",
+  "electus ",
+  "extremus ",
+  "gravatus ",
+  "gravis ",
+  "hodiernus ",
+  "honorabilis ",
+  "idoneus ",
+  "ignarus ",
+  "ignavus ",
+  "ignotus ",
+  "immortalis ",
+  "incorruptus ",
+  "liquidus ",
+  "prudens ",
+  "regius ",
+  "rusticus ",
+  "salvus ",
+  "serius ",
+  "simplex ",
+  "tersus ",
+  "tutis ",
+  "vetus "
+];
+
 // Get a random item given an array
 const getRandomArrItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -82,10 +110,20 @@ const getRandomName = () =>
   `${getRandomArrItem(names)} ${getRandomArrItem(names)}`;
 
 // Function to create Thoughts Data
+const getRandomText = (len) => {
+  const thtLen = Math.floor(Math.random() * len * latinText.length);
+  let fullString = "";
+  for (let i = 0; i < thtLen; i++) {
+    const word = getRandomArrItem(latinText);
+    fullString += word;
+  }
+  return `${fullString.trim()}.`
+}
 
+const getRandomThought = () => getRandomText(4);
 
 // Function to generate reactions for users/thoughts
-
+const getRandomReaction = () => getRandomText(1);
 
 // Export the functions for use in seed.js
-module.exports = { getRandomName };
+module.exports = { getRandomName, getRandomThought, getRandomReaction };

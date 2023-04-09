@@ -75,7 +75,8 @@ module.exports = {
       .then((thought) => {
         if (!thought) {
           res.status(404).json( { message: 'No Thought with that ID' } );
-        } else {
+        } 
+        else {
           User.findOneAndUpdate(
             { thoughts: { $elemMatch: { $eq: req.params.thoughtId } } },
             { $pull: { thoughts: req.params.thoughtId } },
@@ -83,9 +84,9 @@ module.exports = {
           )
           .then((user) => {
             if (!user) {
-              res.status(404).json( { message: "Thought deleted but there is no user found to connect to" } );
+              return res.status(220).json( { message: "Thought deleted but there is no user found to connect to" } );
             }
-            res.json({ message: 'Thought deleted and removed from User successfully' })
+            return res.json({ message: 'Thought deleted and removed from User successfully' })
           })
           .catch((err) => res.status(500).json( { err, message: 'Thought deleted but not removed from User' }));
         }

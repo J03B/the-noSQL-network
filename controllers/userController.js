@@ -2,35 +2,13 @@
 const { ObjectId } = require('mongoose').Types;
 const { User, Thought } = require('../models');
 
-const allFriendsCount = async () => 
-  User.aggregate([
-    { 
-      $addFields: {
-        friendCount: { $size: '$friends' },
-      },
-    },
-  ]);
-
-const friendCount = async (userId) => 
-  User.aggregate([
-    {
-      $match: { _id: ObjectId(userId) }
-    }, 
-    {
-      $addFields: {
-        friendCount: { $size: '$friends' },
-      },
-    },
-  ]);
-
 module.exports = {
   // API: /api/users
   // GET all users
   getUsers(req, res) {
     User.find()
-      .then(async (users) => {
-        const userObj = await allFriendsCount();
-        res.status(200).json( {...userObj} );
+      .then((users) => {
+        res.status(200).json( users );
       })
       .catch((err) => {
         console.log(err);
@@ -43,12 +21,11 @@ module.exports = {
   getSingleUser(req, res) {
     User.findOne( { _id: req.params.userId } )
       .select('-__v')
-      .then(async (user) => {
+      .then((user) => {
         if (!user) {
           res.status(404).json( { message: 'No User found with that ID' } );
         } else {
-          userObj = await friendCount(req.params.userId);
-          res.status(200).json( {...userObj} );
+          res.status(200).json( user );
         }
       })
       .catch((err) => {
@@ -61,9 +38,8 @@ module.exports = {
   // POST a new user:
   createUser(req, res) {
     User.create(req.body)
-      .then(async (user) => {
-        const userObj = await friendCount(user._id);
-        res.status(200).json( {...userObj} );
+      .then((user) => {
+        res.status(200).json( user );
       })
       .catch((err) => res.status(500).json(err));
   },
@@ -76,12 +52,11 @@ module.exports = {
       { $set: req.body },
       { runValidators: true, new: true }
     )
-      .then(async (user) => {
+      .then((user) => {
         if (!user) {
           res.status(404).json( { message: 'No User found with that ID' } );
         } else {
-          const userObj = await friendCount(req.params.userId);
-          res.status(200).json( {...userObj} );
+          res.status(200).json( user );
         }
       })
       .catch((err) => res.status(500).json(err));
@@ -91,7 +66,7 @@ module.exports = {
   // DELETE to remove user by its _id (and associated thoughts)
   deleteUser(req, res) {
     User.findOneAndDelete( { _id: req.params.userId } )
-      .then(async (user) => {
+      .then((user) => {
         if (!user) {
           res.status(404).json( { message: 'No User found with that ID' } );
         } else {
@@ -110,12 +85,11 @@ module.exports = {
       { $push: { friends: req.params.friendId } },
       { new: true }
     )
-      .then(async (user) => {
+      .then((user) => {
         if (!user) {
           res.status(404).json( { message: 'No User found with that ID' } );
         } else {
-          const userObj = await friendCount(req.params.userId);
-          res.status(200).json( {...userObj} );
+          res.status(200).json( user );
         }
       })
       .catch((err) => res.status(500).json(err));
@@ -129,12 +103,11 @@ module.exports = {
       { $pull: { friends: req.params.friendId } },
       { new: true }
     )
-      .then(async (user) => {
+      .then((user) => {
         if (!user) {
           res.status(404).json( { message: 'No User found with that ID' } );
         } else {
-          const userObj = await friendCount(req.params.userId);
-          res.status(200).json( {...userObj} );
+          res.status(200).json( user );
         }
       })
       .catch((err) => res.status(500).json(err));
