@@ -1,4 +1,4 @@
-const { User, Thought, reactionSchema } = require('../models');
+const { User, Thought } = require('../models');
 
 module.exports = {
   // API: /api/thoughts
@@ -27,14 +27,22 @@ module.exports = {
   // API: /api/thoughts/:userId
   // POST to create a new thought (don't forget to push the created thought's _id to the associated user's thoughts array field)
   createThought(req, res) {
+    let msg = "";
     Thought.create(req.body)
       .then((thought) => {
         User.findOneAndUpdate(
           { _id: req.params.userId },
-          { $push: { thoughts: thought._id } },
+          { $push: { thoughts: thought._id.toString() } },
           { new: true }
-        );
-        res.json( { thought: thought, message: 'Thought added to User' } );
+        )
+        .then((user) => {
+          msg = "and added to User";
+          res.json( { thought: thought, message: `Thought created ${msg}` } );
+        })
+        .catch((err) => {
+          msg = "but anable to add to User";
+          res.status(220).json( { thought: thought, message: `Thought created ${msg}` } );
+        });
       })
       .catch((err) => {
         console.log(err);
@@ -69,31 +77,36 @@ module.exports = {
           res.status(404).json( { message: 'No Thought with that ID' } );
         } else {
           User.findOneAndUpdate(
-            { thoughts: req.params.thoughtId },
+            { thoughts: { $elemMatch: { $eq: req.params.thoughtId } } },
             { $pull: { thoughts: req.params.thoughtId } },
             { new: true }
-          );
+          )
+          .then((user) => {
+            if (!user) {
+              res.status(404).json( { message: "Thought deleted but there is no user found to connect to" } );
+            }
+            res.json({ message: 'Thought deleted and removed from User successfully' })
+          })
+          .catch((err) => res.status(500).json( { err, message: 'Thought deleted but not removed from User' }));
         }
-      })
-      .then(() => res.json({ message: 'Thought deleted and removed from User' }))
-      .catch((err) => res.status(500).json(err));
+      });
   },
 
   // API: /api/thoughts/:thoughtId/reactions
   // POST to create a reaction stored in a single thought's reactions array field
   createReaction(req, res) {
-    reactionSchema.create(req.body)
-      .then((reaction) => {
-        Thought.findOneAndUpdate(
-          { _id: req.params.thoughtId },
-          { $addToSet: { reactions: reaction } },
-          { new: true }
-        )
-        .then((updatedThought) => {
-          res.json({ updatedThought });
-        })
-      })
-      .catch((err) => res.status(500).json(err));
+    Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
+      { $addToSet: { reactions: req.body } },
+      { runValidators: true, new: true }
+    )
+    .then((updatedThought) => {
+      if (!updatedThought) {
+        res.status(404).json( { message: "No Thought with that ID" } )
+      }
+      res.json({ updatedThought });
+    })
+  .catch((err) => res.status(500).json(err));
   },
 
   // API: /api/thoughts/:thoughtId/reactions/:reactionId
@@ -106,7 +119,7 @@ module.exports = {
     )
       .then((thought) => {
         if (!thought) {
-          res.status(404).json({ message: 'Thought or Reaction ID not found' });
+          res.status(404).json({ message: 'Thought ID not found' });
         } else {
           res.json(thought);
         }

@@ -13,6 +13,7 @@ const thoughtSchema = new Schema(
       type: Date,
       default: Date.now,
       // Use a getter method to format the timestamp on query
+      get: (dateAndTime) => dateAndTime.toDateString(),
     },
     username: {
       type: String,
@@ -23,9 +24,15 @@ const thoughtSchema = new Schema(
   {
     toJSON: {
       virtuals: true,
+      getters: true,
     },
+    id: false,
   }
 );
+
+thoughtSchema.virtual('reactionCount').get( () => {
+  return this.reactions.length;
+});
 
 const Thought = model('thought', thoughtSchema);
 
